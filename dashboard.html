@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulse — Bot Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d14;
+    --bg-elevated:#10141f;
+    --surface:#161b28;
+    --surface-hover:#1c2233;
+    --border:#262c3d;
+    --border-soft:#1d2333;
+    --text:#e9ebf3;
+    --text-dim:#9198b3;
+    --text-faint:#5a6180;
+    --accent:#5b6ef5;
+    --accent-strong:#7583ff;
+    --accent-soft:rgba(91,110,245,.16);
+    --accent-2:#2fd996;
+    --accent-2-soft:rgba(47,217,150,.14);
+    --warn:#f5a524;
+    --danger:#f5566b;
+    --danger-soft:rgba(245,86,107,.14);
+    --radius:14px;
+    --radius-sm:9px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1100px 600px at 85% -10%, rgba(91,110,245,.14), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(47,217,150,.08), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3,.brand,.section-title{font-family:'Space Grotesk',sans-serif;}
+
+  /* ---------- Layout ---------- */
+  .app{display:grid; grid-template-columns:264px 1fr; min-height:100vh;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    background:var(--bg-elevated);
+    border-right:1px solid var(--border-soft);
+    padding:22px 16px 16px;
+    display:flex; flex-direction:column;
+    position:sticky; top:0; height:100vh;
+  }
+  .brand{display:flex; align-items:center; gap:10px; padding:0 8px 22px; border-bottom:1px solid var(--border-soft); margin-bottom:16px;}
+  .brand-mark{
+    width:34px; height:34px; border-radius:10px;
+    background:linear-gradient(135deg,var(--accent),#8b6cf5);
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px; flex-shrink:0;
+    box-shadow:0 0 0 1px rgba(255,255,255,.06), 0 6px 16px -4px rgba(91,110,245,.6);
+  }
+  .brand-name{font-size:16.5px; font-weight:700; letter-spacing:.2px;}
+  .brand-sub{font-size:11.5px; color:var(--text-faint); margin-top:1px;}
+
+  .nav-group-label{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:.09em;
+    color:var(--text-faint); padding:14px 10px 6px; font-weight:600;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding:8px 10px; border-radius:var(--radius-sm);
+    color:var(--text-dim); font-size:13.5px; font-weight:500;
+    cursor:pointer; user-select:none; border:1px solid transparent;
+    transition:background .12s ease, color .12s ease;
+  }
+  .nav-item:hover{background:var(--surface); color:var(--text);}
+  .nav-item.active{background:var(--accent-soft); color:#c7cdff; border-color:rgba(91,110,245,.35);}
+  .nav-item .ic{width:18px; text-align:center; font-size:14px; opacity:.9;}
+  .nav-item .count{margin-left:auto; font-size:11px; color:var(--text-faint); font-variant-numeric:tabular-nums;}
+  .nav-item.active .count{color:#a9b1ff;}
+
+  .sidebar-foot{
+    margin-top:auto; padding:12px 10px 4px; border-top:1px solid var(--border-soft);
+    font-size:11.5px; color:var(--text-faint);
+  }
+
+  /* ---------- Main ---------- */
+  .main{padding:26px 34px 60px; min-width:0;}
+
+  .topbar{
+    display:flex; align-items:center; gap:16px;
+    margin-bottom:26px;
+  }
+  .server-pill{
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface); border:1px solid var(--border);
+    padding:7px 14px 7px 8px; border-radius:999px;
+  }
+  .server-pill img, .server-pill .avatar{
+    width:30px; height:30px; border-radius:50%;
+    background:linear-gradient(135deg,#5b6ef5,#2fd996);
+    display:flex; align-items:center; justify-content:center; font-size:14px;
+  }
+  .server-pill .name{font-size:13px; font-weight:600;}
+  .server-pill .meta{font-size:11px; color:var(--text-faint);}
+  .status-dot{width:8px; height:8px; border-radius:50%; background:var(--accent-2); box-shadow:0 0 0 3px var(--accent-2-soft);}
+
+  .search-wrap{flex:1; max-width:420px; position:relative;}
+  .search-wrap input{
+    width:100%; background:var(--surface); border:1px solid var(--border);
+    color:var(--text); font-size:13.5px; padding:10px 14px 10px 36px;
+    border-radius:10px; outline:none; font-family:inherit;
+  }
+  .search-wrap input::placeholder{color:var(--text-faint);}
+  .search-wrap input:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+  .search-wrap .sic{position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-faint); font-size:14px;}
+
+  .topbar-stats{display:flex; gap:10px; margin-left:auto;}
+  .stat-chip{
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    padding:7px 13px; text-align:right; min-width:76px;
+  }
+  .stat-chip b{display:block; font-size:15px; font-family:'Space Grotesk',sans-serif;}
+  .stat-chip span{font-size:10.5px; color:var(--text-faint);}
+
+  .section-head{margin-bottom:18px;}
+  .section-title{font-size:21px; font-weight:700; margin:0 0 4px;}
+  .section-desc{font-size:13.5px; color:var(--text-dim); max-width:640px; line-height:1.5;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+    gap:14px;
+  }
+
+  .card{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:16px;
+    cursor:pointer; transition:border-color .15s ease, transform .15s ease, background .15s ease;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .card:hover{border-color:#333c54; background:var(--surface-hover); transform:translateY(-2px);}
+  .card-top{display:flex; align-items:flex-start; gap:11px;}
+  .card-icon{
+    width:36px; height:36px; border-radius:10px; flex-shrink:0;
+    background:var(--accent-soft); display:flex; align-items:center; justify-content:center; font-size:17px;
+  }
+  .card-title-wrap{flex:1; min-width:0;}
+  .card-title{font-size:14.5px; font-weight:600; margin:0 0 2px;}
+  .card-cat{font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em;}
+  .card-desc{font-size:12.5px; color:var(--text-dim); line-height:1.5; margin:0; flex:1;}
+
+  .card-foot{display:flex; align-items:center; justify-content:space-between; margin-top:2px;}
+  .card-status{font-size:11px; font-weight:600;}
+  .card-status.on{color:var(--accent-2);}
+  .card-status.off{color:var(--text-faint);}
+
+  /* Toggle switch */
+  .switch{
+    position:relative; width:38px; height:22px; border-radius:999px;
+    background:#2a3044; border:1px solid var(--border); flex-shrink:0;
+    transition:background .15s ease;
+  }
+  .switch::after{
+    content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%;
+    background:#8a90a8; transition:transform .15s ease, background .15s ease;
+  }
+  .switch.on{background:var(--accent); border-color:var(--accent);}
+  .switch.on::after{transform:translateX(16px); background:#fff;}
+
+  .empty-state{
+    text-align:center; padding:60px 20px; color:var(--text-faint); font-size:13.5px;
+  }
+
+  /* ---------- Drawer ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(3,4,10,.6); backdrop-filter:blur(2px);
+    opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:40;
+  }
+  .overlay.show{opacity:1; pointer-events:auto;}
+
+  .drawer{
+    position:fixed; top:0; right:0; height:100vh; width:440px; max-width:92vw;
+    background:var(--bg-elevated); border-left:1px solid var(--border);
+    transform:translateX(100%); transition:transform .25s cubic-bezier(.32,.9,.4,1);
+    z-index:50; display:flex; flex-direction:column;
+  }
+  .drawer.show{transform:translateX(0);}
+
+  .drawer-head{
+    padding:20px 22px; border-bottom:1px solid var(--border-soft);
+    display:flex; align-items:flex-start; gap:13px;
+  }
+  .drawer-head .card-icon{width:42px; height:42px; font-size:19px; border-radius:12px;}
+  .drawer-head h2{font-size:17px; margin:0 0 4px;}
+  .drawer-head p{font-size:12.5px; color:var(--text-dim); margin:0; line-height:1.5;}
+  .drawer-close{
+    margin-left:auto; width:30px; height:30px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface); color:var(--text-dim); cursor:pointer; font-size:14px; flex-shrink:0;
+  }
+  .drawer-close:hover{color:var(--text); border-color:#3a4260;}
+
+  .drawer-toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 22px; border-bottom:1px solid var(--border-soft);
+    background:var(--surface);
+  }
+  .drawer-toggle-row .label{font-size:13px; font-weight:600;}
+  .drawer-toggle-row .sub{font-size:11.5px; color:var(--text-faint); margin-top:1px;}
+
+  .drawer-body{padding:18px 22px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;}
+
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:12px; font-weight:600; color:var(--text-dim);}
+  .field .hint{font-size:11px; color:var(--text-faint); margin-top:-3px;}
+  .field input[type=text], .field input[type=number], .field textarea, .field select{
+    background:var(--surface); border:1px solid var(--border); color:var(--text);
+    font-size:13px; padding:9px 11px; border-radius:9px; outline:none; font-family:inherit; width:100%;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+  .field textarea{resize:vertical; min-height:64px; line-height:1.5;}
+  .field select{appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239198b3'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:30px;}
+
+  .subtoggle-list{display:flex; flex-direction:column; gap:2px; border:1px solid var(--border); border-radius:10px; overflow:hidden;}
+  .subtoggle{display:flex; align-items:center; justify-content:space-between; padding:11px 13px; background:var(--surface);}
+  .subtoggle:not(:last-child){border-bottom:1px solid var(--border-soft);}
+  .subtoggle span{font-size:12.5px;}
+  .switch.sm{width:32px; height:19px;}
+  .switch.sm::after{width:13px; height:13px;}
+  .switch.sm.on::after{transform:translateX(13px);}
+
+  .chip-row{display:flex; flex-wrap:wrap; gap:6px;}
+  .chip{
+    font-size:11.5px; padding:5px 10px; border-radius:999px; background:var(--surface);
+    border:1px solid var(--border); color:var(--text-dim);
+  }
+
+  .drawer-foot{
+    padding:16px 22px; border-top:1px solid var(--border-soft);
+    display:flex; gap:10px;
+  }
+  .btn{
+    flex:1; padding:11px 14px; border-radius:10px; border:1px solid var(--border);
+    font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;
+    background:var(--surface); color:var(--text);
+  }
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .btn.primary:hover{background:var(--accent-strong);}
+  .btn:not(.primary):hover{background:var(--surface-hover);}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--surface); border:1px solid var(--border); color:var(--text);
+    padding:11px 18px; border-radius:10px; font-size:13px; font-weight:500;
+    opacity:0; pointer-events:none; transition:all .25s ease; z-index:60;
+    display:flex; align-items:center; gap:8px;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast .dot{width:7px; height:7px; border-radius:50%; background:var(--accent-2);}
+
+  @media (max-width: 880px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{position:relative; height:auto; flex-direction:row; overflow-x:auto; gap:4px; padding:14px;}
+    .brand{border:none; padding:0 10px 0 0; margin:0;}
+    .nav-group-label{display:none;}
+    .sidebar-foot{display:none;}
+    .main{padding:20px;}
+    .topbar{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">⚡</div>
+      <div>
+        <div class="brand-name">Pulse</div>
+        <div class="brand-sub">Bot Dashboard</div>
+      </div>
+    </div>
+
+    <div class="nav-group-label">Übersicht</div>
+    <div class="nav-item active" data-cat="all"><span class="ic">▦</span> Alle Module <span class="count" id="count-all">0</span></div>
+
+    <div class="nav-group-label">Kategorien</div>
+    <div class="nav-item" data-cat="automation"><span class="ic">⚙️</span> Automation <span class="count" id="count-automation">0</span></div>
+    <div class="nav-item" data-cat="moderation"><span class="ic">🛡️</span> Moderation & Sicherheit <span class="count" id="count-moderation">0</span></div>
+    <div class="nav-item" data-cat="server"><span class="ic">🗂️</span> Server-Verwaltung <span class="count" id="count-server">0</span></div>
+    <div class="nav-item" data-cat="community"><span class="ic">💬</span> Community <span class="count" id="count-community">0</span></div>
+    <div class="nav-item" data-cat="ai"><span class="ic">✨</span> KI & Integrationen <span class="count" id="count-ai">0</span></div>
+    <div class="nav-item" data-cat="fun"><span class="ic">🎲</span> Fun & Utilities <span class="count" id="count-fun">0</span></div>
+
+    <div class="sidebar-foot">Pulse Dashboard · Vorschau-Version<br>Änderungen werden lokal gespeichert.</div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+
+    <div class="topbar">
+      <div class="server-pill">
+        <div class="avatar">🎮</div>
+        <div>
+          <div class="name">FlixGames Community</div>
+          <div class="meta"><span class="status-dot"></span> Pulse ist online</div>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <span class="sic">⌕</span>
+        <input type="text" id="searchInput" placeholder="Modul suchen, z.B. Ticket, Level, Welcome...">
+      </div>
+
+      <div class="topbar-stats">
+        <div class="stat-chip"><b id="statEnabled">0</b><span>aktiv</span></div>
+        <div class="stat-chip"><b id="statTotal">0</b><span>Module</span></div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h1 class="section-title" id="sectionTitle">Alle Module</h1>
+      <p class="section-desc" id="sectionDesc">Jede Karte ist ein Bot-Modul. Klick auf den Schalter zum Ein-/Ausschalten, oder auf die Karte für Details und Einstellungen.</p>
+    </div>
+
+    <div class="grid" id="cardGrid"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">Kein Modul gefunden. Versuch einen anderen Suchbegriff.</div>
+
+  </main>
+</div>
+
+<!-- ================= DRAWER ================= -->
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="card-icon" id="drawerIcon">⚙️</div>
+    <div>
+      <h2 id="drawerTitle">Modulname</h2>
+      <p id="drawerDesc">Beschreibung</p>
+    </div>
+    <button class="drawer-close" id="drawerClose">✕</button>
+  </div>
+
+  <div class="drawer-toggle-row">
+    <div>
+      <div class="label">Modul aktiviert</div>
+      <div class="sub" id="drawerToggleSub">Für diesen Server eingeschaltet</div>
+    </div>
+    <div class="switch" id="drawerSwitch"></div>
+  </div>
+
+  <div class="drawer-body" id="drawerBody"></div>
+
+  <div class="drawer-foot">
+    <button class="btn" id="drawerCancel">Abbrechen</button>
+    <button class="btn primary" id="drawerSave">Speichern</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastText">Gespeichert</span></div>
+
+<script>
+/* ============================================================
+   Kategorien
+   ============================================================ */
+const CATS = {
+  automation: { label: 'Automation', desc: 'Eigene Befehle, geplante Nachrichten und Aktionen, die automatisch auf Ereignisse reagieren.' },
+  moderation: { label: 'Moderation & Sicherheit', desc: 'Regeln durchsetzen, Spam blocken und den Server sauber halten — automatisch oder per Klick.' },
+  server: { label: 'Server-Verwaltung', desc: 'Kanäle, Support-Tickets, Emojis und alles rund um die Organisation deines Servers.' },
+  community: { label: 'Community', desc: 'Begrüßung neuer Mitglieder, Rollen, Levels und Features, die deine Community aktiv halten.' },
+  ai: { label: 'KI & Integrationen', desc: 'KI-Antworten, Bildgenerierung und Verbindungen zu Twitch, YouTube, Roblox & Co.' },
+  fun: { label: 'Fun & Utilities', desc: 'Spiele, Musik, Wirtschaftssystem und praktische Alltags-Tools für deinen Server.' }
+};
+
+/* ============================================================
+   Alle 52 Module
+   Feldtypen: toggle, text, textarea, number, select, channel, role, tags, subtoggles
+   ============================================================ */
+const FEATURES = [
+  // ---------------- Automation ----------------
+  { id:'custom-commands', cat:'automation', icon:'⌨️', title:'Custom Commands', desc:'Eigene Befehle mit individuellen Antworten erstellen.',
+    fields:[
+      {type:'text', label:'Befehl', placeholder:'z.B. !regeln'},
+      {type:'textarea', label:'Antwort-Text', placeholder:'Text, den der Bot antwortet...'},
+      {type:'select', label:'Berechtigung', options:['Jeder','Nur Moderatoren','Nur Admins']}
+    ]},
+  { id:'custom-events', cat:'automation', icon:'🧩', title:'Custom Events', desc:'Aktionen automatisch bei bestimmten Server-Ereignissen auslösen.',
+    fields:[
+      {type:'select', label:'Auslöser', options:['Mitglied tritt bei','Rolle geändert','Nachricht gelöscht','Reaktion hinzugefügt']},
+      {type:'select', label:'Aktion', options:['Nachricht senden','Rolle vergeben','Webhook aufrufen']},
+      {type:'channel', label:'Ziel-Kanal'}
+    ]},
+  { id:'timed-events', cat:'automation', icon:'⏱️', title:'Timed Events', desc:'Wiederkehrende Aktionen zu festen Zeiten planen.',
+    fields:[
+      {type:'select', label:'Wiederholung', options:['Täglich','Wöchentlich','Monatlich']},
+      {type:'text', label:'Uhrzeit', placeholder:'20:00'},
+      {type:'textarea', label:'Auszuführende Aktion'}
+    ]},
+  { id:'data-storage', cat:'automation', icon:'🗄️', title:'Data Storage', desc:'Eigene Variablen und Werte pro Server oder Nutzer speichern.',
+    fields:[
+      {type:'select', label:'Speicherbereich', options:['Pro Server','Pro Nutzer','Pro Kanal']},
+      {type:'number', label:'Max. Einträge', placeholder:'1000'}
+    ]},
+  { id:'webhooks', cat:'automation', icon:'🔗', title:'Webhooks', desc:'Daten von externen Diensten an Discord-Kanäle senden.',
+    fields:[
+      {type:'text', label:'Webhook-Name', placeholder:'z.B. News Feed'},
+      {type:'channel', label:'Ziel-Kanal'},
+      {type:'text', label:'Externe URL', placeholder:'https://...'}
+    ]},
+  { id:'transcripts', cat:'automation', icon:'📄', title:'Transcripts', desc:'Ticket- und Kanal-Verläufe automatisch als Protokoll sichern.',
+    fields:[
+      {type:'channel', label:'Archiv-Kanal'},
+      {type:'select', label:'Format', options:['HTML','Text','PDF']}
+    ]},
+  { id:'ifttt', cat:'automation', icon:'🔀', title:'IFTTT', desc:'Discord mit tausenden Apps über IFTTT-Applets verbinden.',
+    fields:[
+      {type:'text', label:'IFTTT-Webhook-Key', placeholder:'dein-key'},
+      {type:'tags', label:'Aktive Applets', placeholder:'z.B. Twitter, Sheets'}
+    ]},
+  { id:'message-builder', cat:'automation', icon:'🧱', title:'Message Builder', desc:'Reich formatierte Embed-Nachrichten per Baukasten erstellen.',
+    fields:[
+      {type:'text', label:'Titel'},
+      {type:'textarea', label:'Beschreibung'},
+      {type:'text', label:'Akzentfarbe (Hex)', placeholder:'#5b6ef5'}
+    ]},
+  { id:'timed-messages', cat:'automation', icon:'🕒', title:'Timed Messages', desc:'Nachrichten zu einem festgelegten Zeitpunkt automatisch senden.',
+    fields:[
+      {type:'channel', label:'Ziel-Kanal'},
+      {type:'textarea', label:'Nachricht'},
+      {type:'text', label:'Zeitpunkt', placeholder:'z.B. 18:00 täglich'}
+    ]},
+  { id:'autoresponder', cat:'automation', icon:'💡', title:'Autoresponder', desc:'Automatisch auf bestimmte Schlüsselwörter antworten.',
+    fields:[
+      {type:'tags', label:'Schlüsselwörter', placeholder:'z.B. hilfe, support'},
+      {type:'textarea', label:'Antwort'}
+    ]},
+  { id:'sticky-messages', cat:'automation', icon:'📌', title:'Sticky Messages', desc:'Eine Nachricht bleibt immer unten im Kanal sichtbar.',
+    fields:[
+      {type:'channel', label:'Kanal'},
+      {type:'textarea', label:'Angepinnter Text'}
+    ]},
+
+  // ---------------- Moderation ----------------
+  { id:'moderation', cat:'moderation', icon:'🛡️', title:'Moderation', desc:'Warnungen, Kicks, Bans und Mutes zentral verwalten.',
+    fields:[
+      {type:'channel', label:'Mod-Log-Kanal'},
+      {type:'subtoggles', label:'Protokollierte Aktionen', options:['Warnungen','Kicks','Bans','Mutes','Nachrichten-Löschungen']}
+    ]},
+  { id:'polls-filter', cat:'moderation', icon:'🧹', title:'Polls Filter', desc:'Unerwünschte Inhalte in Umfragen automatisch blockieren.',
+    fields:[
+      {type:'tags', label:'Gesperrte Begriffe'},
+      {type:'select', label:'Aktion bei Treffer', options:['Umfrage löschen','Nur melden']}
+    ]},
+  { id:'verification', cat:'moderation', icon:'✅', title:'Verification', desc:'Neue Mitglieder müssen sich verifizieren, bevor sie schreiben können.',
+    fields:[
+      {type:'select', label:'Methode', options:['Button-Klick','Captcha','Reaction','Frage & Antwort']},
+      {type:'role', label:'Rolle nach Verifizierung'},
+      {type:'channel', label:'Verifizierungs-Kanal'}
+    ]},
+  { id:'discord-automod', cat:'moderation', icon:'🤖', title:'Discord Automod', desc:'Discords eingebautes Automod mit eigenen Regeln erweitern.',
+    fields:[
+      {type:'subtoggles', label:'Regeln', options:['Spam-Erkennung','Verbotene Wörter','Massen-Erwähnungen','Link-Filter']},
+      {type:'channel', label:'Meldungs-Kanal'}
+    ]},
+  { id:'auto-react', cat:'moderation', icon:'⚡', title:'Auto-React', desc:'Automatisch mit Emojis auf Nachrichten in bestimmten Kanälen reagieren.',
+    fields:[
+      {type:'channel', label:'Kanal'},
+      {type:'tags', label:'Emojis', placeholder:'👍, 🎉, ❤️'}
+    ]},
+  { id:'sticky-roles', cat:'moderation', icon:'📎', title:'Sticky Roles', desc:'Rollen bleiben erhalten, wenn ein Mitglied den Server verlässt und zurückkehrt.',
+    fields:[
+      {type:'subtoggles', label:'Betroffene Rollentypen', options:['Alle Rollen','Nur manuell vergebene','Nur Boost-Rollen']}
+    ]},
+
+  // ---------------- Server ----------------
+  { id:'server-management', cat:'server', icon:'🗂️', title:'Server Management', desc:'Zentrale Einstellungen für Kanäle, Rollen und Server-Struktur.',
+    fields:[
+      {type:'text', label:'Server-Präfix', placeholder:'!'},
+      {type:'select', label:'Sprache', options:['Deutsch','Englisch']}
+    ]},
+  { id:'modmail', cat:'server', icon:'✉️', title:'Modmail', desc:'Mitglieder können dem Mod-Team privat per DM schreiben.',
+    fields:[
+      {type:'channel', label:'Modmail-Kanal'},
+      {type:'role', label:'Benachrichtigte Rolle'}
+    ]},
+  { id:'statistic-channels', cat:'server', icon:'📊', title:'Statistic Channels', desc:'Sprachkanäle zeigen Live-Statistiken wie Mitgliederzahl an.',
+    fields:[
+      {type:'subtoggles', label:'Angezeigte Werte', options:['Mitglieder gesamt','Online-Mitglieder','Boosts','Bots']}
+    ]},
+  { id:'status', cat:'server', icon:'📶', title:'Status', desc:'Zeigt den Bot-Status und die Serverauslastung an.',
+    fields:[
+      {type:'channel', label:'Status-Kanal'},
+      {type:'number', label:'Update-Intervall (Minuten)', placeholder:'5'}
+    ]},
+  { id:'emoji-manager', cat:'server', icon:'😀', title:'Emoji Manager', desc:'Server-Emojis verwalten, importieren und organisieren.',
+    fields:[
+      {type:'select', label:'Import-Quelle', options:['Datei-Upload','Von anderem Server','URL']}
+    ]},
+  { id:'tickets', cat:'server', icon:'🎫', title:'Tickets', desc:'Support-Anfragen als private Ticket-Kanäle organisieren.',
+    fields:[
+      {type:'channel', label:'Ticket-Kategorie'},
+      {type:'role', label:'Support-Team-Rolle'},
+      {type:'textarea', label:'Begrüßungs-Nachricht im Ticket'}
+    ]},
+  { id:'messages', cat:'server', icon:'💬', title:'Messages', desc:'Vorlagen für häufig genutzte Nachrichten verwalten.',
+    fields:[
+      {type:'text', label:'Vorlagen-Name'},
+      {type:'textarea', label:'Inhalt'}
+    ]},
+
+  // ---------------- Community ----------------
+  { id:'welcomer', cat:'community', icon:'👋', title:'Welcomer', desc:'Neue Mitglieder automatisch mit einer Nachricht begrüßen.',
+    fields:[
+      {type:'channel', label:'Willkommens-Kanal'},
+      {type:'textarea', label:'Nachricht', placeholder:'Willkommen {user} auf dem Server!'},
+      {type:'select', label:'Bildkarte', options:['Aus','Einfach','Mit Server-Banner']}
+    ]},
+  { id:'reaction-roles', cat:'community', icon:'🎭', title:'Reaction Roles', desc:'Mitglieder erhalten Rollen durch Klick auf eine Reaktion.',
+    fields:[
+      {type:'channel', label:'Kanal'},
+      {type:'role', label:'Zu vergebende Rolle'},
+      {type:'text', label:'Emoji', placeholder:'🎮'}
+    ]},
+  { id:'global-chat', cat:'community', icon:'🌐', title:'Global Chat', desc:'Kanal mit anderen Servern im Netzwerk verbinden.',
+    fields:[
+      {type:'channel', label:'Verknüpfter Kanal'},
+      {type:'select', label:'Filter', options:['Keiner','Nur Text','Streng (kein Spam/Links)']}
+    ]},
+  { id:'polls', cat:'community', icon:'🗳️', title:'Polls', desc:'Schnelle Umfragen mit Reaktionen erstellen.',
+    fields:[
+      {type:'text', label:'Frage'},
+      {type:'tags', label:'Antwortoptionen', placeholder:'Ja, Nein, Vielleicht'},
+      {type:'number', label:'Laufzeit (Stunden)', placeholder:'24'}
+    ]},
+  { id:'media-channels', cat:'community', icon:'🖼️', title:'Media Channels', desc:'Kanäle, in denen nur Bilder/Videos erlaubt sind.',
+    fields:[
+      {type:'channel', label:'Medien-Kanal'},
+      {type:'select', label:'Textnachrichten', options:['Blockieren','Automatisch löschen','Erlauben']}
+    ]},
+  { id:'community-engagement', cat:'community', icon:'🚀', title:'Community Engagement', desc:'Übersicht aller Aktivitäts- und Beteiligungs-Features.',
+    fields:[
+      {type:'subtoggles', label:'Enthaltene Module', options:['Starboard','Leveling','Suggestions','Question of the Day']}
+    ]},
+  { id:'starboard', cat:'community', icon:'⭐', title:'Starboard', desc:'Beliebte Nachrichten werden bei genug ⭐-Reaktionen gepostet.',
+    fields:[
+      {type:'channel', label:'Starboard-Kanal'},
+      {type:'number', label:'Benötigte Reaktionen', placeholder:'5'}
+    ]},
+  { id:'leveling', cat:'community', icon:'📈', title:'Leveling', desc:'Mitglieder sammeln XP durch Aktivität und steigen Level auf.',
+    fields:[
+      {type:'channel', label:'Level-Up-Kanal'},
+      {type:'number', label:'XP pro Nachricht', placeholder:'15'},
+      {type:'role', label:'Belohnungs-Rolle ab Level'}
+    ]},
+  { id:'temp-voice', cat:'community', icon:'🔊', title:'Temp Voice Channels', desc:'Mitglieder erstellen eigene temporäre Sprachkanäle.',
+    fields:[
+      {type:'channel', label:'"Erstellen"-Kanal'},
+      {type:'number', label:'Max. Nutzer pro Kanal', placeholder:'8'}
+    ]},
+  { id:'invite-tracker', cat:'community', icon:'📨', title:'Invite Tracker', desc:'Zeigt, wer welches Mitglied eingeladen hat.',
+    fields:[
+      {type:'channel', label:'Log-Kanal'},
+      {type:'select', label:'Anzeige', options:['Nur bei Beitritt','Auch bei Austritt']}
+    ]},
+  { id:'suggestions', cat:'community', icon:'💡', title:'Suggestions', desc:'Mitglieder können Vorschläge einreichen und abstimmen lassen.',
+    fields:[
+      {type:'channel', label:'Vorschlags-Kanal'},
+      {type:'select', label:'Abstimmung', options:['👍/👎 Reaktionen','Sterne-Bewertung']}
+    ]},
+  { id:'qotd', cat:'community', icon:'❓', title:'Question Of The Day', desc:'Postet täglich automatisch eine neue Diskussionsfrage.',
+    fields:[
+      {type:'channel', label:'Kanal'},
+      {type:'text', label:'Uhrzeit', placeholder:'12:00'}
+    ]},
+  { id:'counting', cat:'community', icon:'🔢', title:'Counting', desc:'Community zählt gemeinsam hoch — ein Fehler setzt zurück.',
+    fields:[
+      {type:'channel', label:'Zähl-Kanal'},
+      {type:'select', label:'Bei Fehler', options:['Zurücksetzen','Nur melden']}
+    ]},
+  { id:'birthdays', cat:'community', icon:'🎂', title:'Birthdays', desc:'Feiert automatisch die Geburtstage deiner Mitglieder.',
+    fields:[
+      {type:'channel', label:'Ankündigungs-Kanal'},
+      {type:'role', label:'Geburtstags-Rolle (optional)'}
+    ]},
+
+  // ---------------- AI & Integrationen ----------------
+  { id:'ai', cat:'ai', icon:'✨', title:'AI', desc:'Allgemeine KI-Funktionen für deinen Server aktivieren.',
+    fields:[
+      {type:'channel', label:'Erlaubter Kanal (leer = überall)'},
+      {type:'select', label:'Antwortstil', options:['Freundlich','Neutral','Kurz & direkt']}
+    ]},
+  { id:'chatgpt', cat:'ai', icon:'🧠', title:'ChatGPT', desc:'Mitglieder können den Bot direkt im Chat etwas fragen.',
+    fields:[
+      {type:'text', label:'Trigger', placeholder:'z.B. @Pulse frag ...'},
+      {type:'number', label:'Tägliches Limit pro Nutzer', placeholder:'20'}
+    ]},
+  { id:'image-generation', cat:'ai', icon:'🖌️', title:'Image Generation', desc:'Bilder aus Text-Beschreibungen per Befehl erzeugen.',
+    fields:[
+      {type:'text', label:'Befehl', placeholder:'/image'},
+      {type:'select', label:'Stil-Standard', options:['Realistisch','Anime','Digital Art','Pixel Art']}
+    ]},
+  { id:'game-integrations', cat:'ai', icon:'🕹️', title:'Game Integrations', desc:'Verbindungen zu Spiel-Plattformen wie Roblox einrichten.',
+    fields:[
+      {type:'subtoggles', label:'Verbundene Spiele', options:['Roblox','Minecraft','Fortnite']}
+    ]},
+  { id:'roblox-verification', cat:'ai', icon:'🎮', title:'Roblox Verification', desc:'Discord-Konten mit Roblox-Accounts verknüpfen.',
+    fields:[
+      {type:'role', label:'Rolle nach Verifizierung'},
+      {type:'select', label:'Anzeigename', options:['Roblox-Name übernehmen','Discord-Name behalten']}
+    ]},
+  { id:'social-integrations', cat:'ai', icon:'📡', title:'Social Integrations', desc:'Übersicht aller verbundenen Social-Media-Plattformen.',
+    fields:[
+      {type:'subtoggles', label:'Plattformen', options:['Twitch','YouTube','X / Twitter','TikTok']}
+    ]},
+  { id:'twitch', cat:'ai', icon:'🟣', title:'Twitch Notifications', desc:'Postet automatisch, wenn ein Streamer live geht.',
+    fields:[
+      {type:'text', label:'Twitch-Kanalname'},
+      {type:'channel', label:'Ankündigungs-Kanal'},
+      {type:'textarea', label:'Nachricht', placeholder:'{streamer} ist jetzt live!'}
+    ]},
+  { id:'youtube', cat:'ai', icon:'🔴', title:'YouTube Notifications', desc:'Benachrichtigt bei neuen Video-Uploads.',
+    fields:[
+      {type:'text', label:'YouTube-Kanal-URL'},
+      {type:'channel', label:'Ankündigungs-Kanal'}
+    ]},
+  { id:'translation', cat:'ai', icon:'🌍', title:'Translation', desc:'Übersetzt Nachrichten automatisch oder per Reaktion.',
+    fields:[
+      {type:'select', label:'Modus', options:['Per Reaktion (🌍)','Automatisch pro Kanal']},
+      {type:'select', label:'Standard-Zielsprache', options:['Deutsch','Englisch','Spanisch','Französisch']}
+    ]},
+  { id:'weather', cat:'ai', icon:'⛅', title:'Weather', desc:'Aktuelles Wetter für einen Ort per Befehl abrufen.',
+    fields:[
+      {type:'text', label:'Befehl', placeholder:'/weather'},
+      {type:'select', label:'Einheit', options:['Celsius','Fahrenheit']}
+    ]},
+
+  // ---------------- Fun & Utilities ----------------
+  { id:'fun', cat:'fun', icon:'🎉', title:'Fun', desc:'Mini-Befehle wie Memes, Witze und Zufallsgeneratoren.',
+    fields:[
+      {type:'subtoggles', label:'Aktive Befehle', options:['Meme','Witz','8ball','Münzwurf']}
+    ]},
+  { id:'economy', cat:'fun', icon:'🪙', title:'Economy & Minigames', desc:'Server-Währung, Shop und kleine Minispiele.',
+    fields:[
+      {type:'text', label:'Währungsname', placeholder:'Coins'},
+      {type:'number', label:'Tägliches Bonus', placeholder:'100'},
+      {type:'subtoggles', label:'Minispiele', options:['Slots','Blackjack','Angeln']}
+    ]},
+  { id:'music', cat:'fun', icon:'🎵', title:'Music', desc:'Musik von YouTube & Spotify in Sprachkanälen abspielen.',
+    fields:[
+      {type:'select', label:'Standard-Quelle', options:['YouTube','Spotify','SoundCloud']},
+      {type:'role', label:'DJ-Rolle (optional)'}
+    ]},
+  { id:'utilities', cat:'fun', icon:'🧰', title:'Utilities', desc:'Praktische Alltags-Befehle wie Erinnerungen und Umrechner.',
+    fields:[
+      {type:'subtoggles', label:'Aktive Tools', options:['Erinnerungen','Umrechner','Avatar-Anzeige','Server-Info']}
+    ]}
+];
+
+/* ============================================================
+   State
+   ============================================================ */
+const STORAGE_KEY = 'pulse_dashboard_state';
+
+function loadState(){
+  try{
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  }catch(e){ return {}; }
+}
+function saveState(state){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let state = loadState();
+// Default: ein paar sinnvolle Module vorab aktiviert, Rest aus
+const DEFAULT_ON = ['moderation','welcomer','tickets','leveling','reaction-roles','discord-automod'];
+FEATURES.forEach(f => {
+  if(!(f.id in state)){
+    state[f.id] = { enabled: DEFAULT_ON.includes(f.id), values:{} };
+  }
+});
+saveState(state);
+
+let currentCat = 'all';
+let currentSearch = '';
+let activeDrawerId = null;
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+const grid = document.getElementById('cardGrid');
+const emptyState = document.getElementById('emptyState');
+
+function updateCounts(){
+  const counts = { all: FEATURES.length };
+  Object.keys(CATS).forEach(c => counts[c] = FEATURES.filter(f=>f.cat===c).length);
+  Object.keys(counts).forEach(c => {
+    const el = document.getElementById('count-'+c);
+    if(el) el.textContent = counts[c];
+  });
+  document.getElementById('statTotal').textContent = FEATURES.length;
+  document.getElementById('statEnabled').textContent = Object.values(state).filter(s=>s.enabled).length;
+}
+
+function renderGrid(){
+  let list = FEATURES;
+  if(currentCat !== 'all') list = list.filter(f => f.cat === currentCat);
+  if(currentSearch.trim()){
+    const q = currentSearch.toLowerCase();
+    list = list.filter(f => f.title.toLowerCase().includes(q) || f.desc.toLowerCase().includes(q));
+  }
+
+  grid.innerHTML = '';
+  emptyState.style.display = list.length ? 'none' : 'block';
+
+  list.forEach(f => {
+    const s = state[f.id];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-icon">${f.icon}</div>
+        <div class="card-title-wrap">
+          <div class="card-title">${f.title}</div>
+          <div class="card-cat">${CATS[f.cat].label}</div>
+        </div>
+      </div>
+      <p class="card-desc">${f.desc}</p>
+      <div class="card-foot">
+        <span class="card-status ${s.enabled?'on':'off'}">${s.enabled?'Aktiv':'Deaktiviert'}</span>
+        <div class="switch ${s.enabled?'on':''}" data-id="${f.id}"></div>
+      </div>
+    `;
+    card.addEventListener('click', (e) => {
+      if(e.target.classList.contains('switch')) return;
+      openDrawer(f.id);
+    });
+    card.querySelector('.switch').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFeature(f.id);
+    });
+    grid.appendChild(card);
+  });
+
+  updateCounts();
+}
+
+function toggleFeature(id){
+  state[id].enabled = !state[id].enabled;
+  saveState(state);
+  renderGrid();
+  if(activeDrawerId === id) syncDrawerToggle(id);
+  showToast(state[id].enabled ? FEATURES.find(f=>f.id===id).title + ' aktiviert' : FEATURES.find(f=>f.id===id).title + ' deaktiviert');
+}
+
+/* ============================================================
+   Sidebar Navigation
+   ============================================================ */
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    currentCat = item.dataset.cat;
+    const title = document.getElementById('sectionTitle');
+    const desc = document.getElementById('sectionDesc');
+    if(currentCat === 'all'){
+      title.textContent = 'Alle Module';
+      desc.textContent = 'Jede Karte ist ein Bot-Modul. Klick auf den Schalter zum Ein-/Ausschalten, oder auf die Karte für Details und Einstellungen.';
+    } else {
+      title.textContent = CATS[currentCat].label;
+      desc.textContent = CATS[currentCat].desc;
+    }
+    renderGrid();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  currentSearch = e.target.value;
+  renderGrid();
+});
+
+/* ============================================================
+   Drawer
+   ============================================================ */
+const overlay = document.getElementById('overlay');
+const drawer = document.getElementById('drawer');
+const drawerBody = document.getElementById('drawerBody');
+
+function fieldTemplate(field, savedValue){
+  const val = savedValue !== undefined ? savedValue : '';
+  switch(field.type){
+    case 'text':
+      return `<div class="field"><label>${field.label}</label><input type="text" data-key="${field.label}" placeholder="${field.placeholder||''}" value="${val}"></div>`;
+    case 'number':
+      return `<div class="field"><label>${field.label}</label><input type="number" data-key="${field.label}" placeholder="${field.placeholder||''}" value="${val}"></div>`;
+    case 'textarea':
+      return `<div class="field"><label>${field.label}</label><textarea data-key="${field.label}" placeholder="${field.placeholder||''}">${val}</textarea></div>`;
+    case 'select':
+      return `<div class="field"><label>${field.label}</label><select data-key="${field.label}">${field.options.map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join('')}</select></div>`;
+    case 'channel':
+      return `<div class="field"><label>${field.label}</label><select data-key="${field.label}"><option>#allgemein</option><option>#ankündigungen</option><option>#mod-log</option><option>#willkommen</option><option>#bot-befehle</option></select></div>`;
+    case 'role':
+      return `<div class="field"><label>${field.label}</label><select data-key="${field.label}"><option>@Mitglied</option><option>@Moderator</option><option>@Admin</option><option>@Booster</option><option>@Verifiziert</option></select></div>`;
+    case 'tags':
+      return `<div class="field"><label>${field.label}</label><input type="text" data-key="${field.label}" placeholder="${field.placeholder||'Mit Komma trennen'}" value="${val}"><div class="hint">Mehrere Werte mit Komma trennen</div></div>`;
+    case 'subtoggles':
+      return `<div class="field"><label>${field.label}</label><div class="subtoggle-list">${field.options.map(o=>{
+        const key = field.label+':'+o;
+        const on = savedValue && savedValue[o];
+        return `<div class="subtoggle"><span>${o}</span><div class="switch sm ${on?'on':''}" data-subkey="${key}" data-parent="${field.label}" data-opt="${o}"></div></div>`;
+      }).join('')}</div></div>`;
+    default: return '';
+  }
+}
+
+function openDrawer(id){
+  activeDrawerId = id;
+  const f = FEATURES.find(x=>x.id===id);
+  const s = state[id];
+
+  document.getElementById('drawerIcon').textContent = f.icon;
+  document.getElementById('drawerTitle').textContent = f.title;
+  document.getElementById('drawerDesc').textContent = f.desc;
+
+  syncDrawerToggle(id);
+
+  drawerBody.innerHTML = f.fields.map(field => {
+    const savedValue = field.type === 'subtoggles' ? (s.values[field.label]||{}) : s.values[field.label];
+    return fieldTemplate(field, savedValue);
+  }).join('');
+
+  drawerBody.querySelectorAll('.subtoggle .switch').forEach(sw => {
+    sw.addEventListener('click', () => sw.classList.toggle('on'));
+  });
+
+  overlay.classList.add('show');
+  drawer.classList.add('show');
+}
+
+function syncDrawerToggle(id){
+  const s = state[id];
+  const sw = document.getElementById('drawerSwitch');
+  sw.classList.toggle('on', s.enabled);
+  document.getElementById('drawerToggleSub').textContent = s.enabled ? 'Für diesen Server eingeschaltet' : 'Derzeit deaktiviert';
+}
+
+document.getElementById('drawerSwitch').addEventListener('click', () => {
+  if(!activeDrawerId) return;
+  toggleFeature(activeDrawerId);
+});
+
+function closeDrawer(){
+  overlay.classList.remove('show');
+  drawer.classList.remove('show');
+  activeDrawerId = null;
+}
+document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+document.getElementById('drawerCancel').addEventListener('click', closeDrawer);
+overlay.addEventListener('click', closeDrawer);
+
+document.getElementById('drawerSave').addEventListener('click', () => {
+  if(!activeDrawerId) return;
+  const f = FEATURES.find(x=>x.id===activeDrawerId);
+  const s = state[activeDrawerId];
+
+  f.fields.forEach(field => {
+    if(field.type === 'subtoggles'){
+      const result = {};
+      field.options.forEach(o => {
+        const sw = drawerBody.querySelector(`[data-subkey="${field.label+':'+o}"]`);
+        result[o] = sw ? sw.classList.contains('on') : false;
+      });
+      s.values[field.label] = result;
+    } else {
+      const input = drawerBody.querySelector(`[data-key="${field.label}"]`);
+      if(input) s.values[field.label] = input.value;
+    }
+  });
+
+  saveState(state);
+  showToast(f.title + ' gespeichert');
+  closeDrawer();
+});
+
+/* ============================================================
+   Toast
+   ============================================================ */
+let toastTimer = null;
+function showToast(text){
+  const toast = document.getElementById('toast');
+  document.getElementById('toastText').textContent = text;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toast.classList.remove('show'), 2200);
+}
+
+/* ============================================================
+   Init
+   ============================================================ */
+renderGrid();
+</script>
+</body>
+</html>

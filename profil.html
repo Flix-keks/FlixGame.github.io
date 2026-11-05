@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FlixGames.net Profile">
+    <title>FlixGames.net - Profile</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, #3b82f6 0%, #0f172a 45%, #020617 100%);
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 40px 16px 80px;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0 0 8px 0;
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #ff3b30, #00e5ff, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #9fb4c7;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #00e5ff;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .back-link:hover { text-decoration: underline; }
+
+        .grid {
+            max-width: 700px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .profile-card {
+            background: rgba(2, 6, 23, 0.65);
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 12px rgba(0, 229, 255, 0.1);
+        }
+
+        .profile-card:hover {
+            transform: translateY(-4px);
+            border-color: #00e5ff;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+        }
+
+        .profile-card.is-me {
+            border-color: #ff3b30;
+            box-shadow: 0 0 16px rgba(255, 59, 48, 0.25);
+        }
+
+        .profile-avatar {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+        }
+
+        .profile-name {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+            word-break: break-word;
+        }
+
+        .profile-username {
+            font-size: 0.75rem;
+            color: #7f93a6;
+            margin-bottom: 6px;
+        }
+
+        .click-hint {
+            font-size: 0.7rem;
+            color: #566a7d;
+        }
+
+        .me-badge {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(255, 59, 48, 0.2);
+            border: 1px solid rgba(255, 59, 48, 0.5);
+            color: #ff8a80;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #9fb4c7;
+            margin-top: 40px;
+            font-size: 0.9rem;
+        }
+
+        /* ---------- Detail-Modal ---------- */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(3px);
+            padding: 16px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background: rgba(2, 6, 23, 0.96);
+            border: 1px solid rgba(0, 229, 255, 0.45);
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.25);
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2f7ff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover { background: rgba(255, 59, 48, 0.5); }
+
+        .modal-avatar {
+            font-size: 4rem;
+            margin-bottom: 12px;
+        }
+
+        .modal-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .modal-username {
+            font-size: 0.85rem;
+            color: #7f93a6;
+            margin-bottom: 18px;
+        }
+
+        .modal-bio-label {
+            font-size: 0.75rem;
+            color: #9fb4c7;
+            text-align: left;
+            margin-bottom: 6px;
+        }
+
+        .modal-bio {
+            font-size: 0.9rem;
+            color: #e2f7ff;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: left;
+            word-break: break-word;
+            min-height: 40px;
+        }
+
+        .modal-bio.empty {
+            color: #566a7d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← Zurück zur Startseite</a>
+    <h1>Profile</h1>
+    <p class="subtitle">Klicke auf ein Profil, um es dir genauer anzusehen</p>
+
+    <div class="grid" id="profilesGrid"></div>
+
+    <!-- ============ Detail-Modal ============ -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-box">
+            <button class="modal-close" id="modalCloseBtn">✕</button>
+            <div class="modal-avatar" id="modalAvatar"></div>
+            <div class="modal-name" id="modalName"></div>
+            <div class="modal-username" id="modalUsername"></div>
+            <div class="modal-bio-label">Bio</div>
+            <div class="modal-bio" id="modalBio"></div>
+        </div>
+    </div>
+
+    <script>
+        const USERS_KEY = 'flixgames_users';
+        const SESSION_KEY = 'flixgames_loggedInUser';
+        const AVATAR_DEFAULT = '🎮';
+
+        const profilesGrid = document.getElementById('profilesGrid');
+        const profileModal = document.getElementById('profileModal');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const modalAvatar = document.getElementById('modalAvatar');
+        const modalName = document.getElementById('modalName');
+        const modalUsername = document.getElementById('modalUsername');
+        const modalBio = document.getElementById('modalBio');
+
+        function getUsers() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(USERS_KEY)) || {};
+                Object.keys(raw).forEach(u => {
+                    if (typeof raw[u] === 'string') {
+                        raw[u] = { password: raw[u], displayName: u, avatar: AVATAR_DEFAULT, bio: '' };
+                    }
+                });
+                return raw;
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function openProfileDetail(username, profile) {
+            modalAvatar.textContent = profile.avatar || AVATAR_DEFAULT;
+            modalName.textContent = profile.displayName || username;
+            modalUsername.textContent = '@' + username;
+
+            if (profile.bio && profile.bio.trim()) {
+                modalBio.textContent = profile.bio;
+                modalBio.classList.remove('empty');
+            } else {
+                modalBio.textContent = 'Noch keine Bio hinterlegt';
+                modalBio.classList.add('empty');
+            }
+
+            profileModal.classList.add('active');
+        }
+
+        modalCloseBtn.addEventListener('click', () => {
+            profileModal.classList.remove('active');
+        });
+        profileModal.addEventListener('click', (e) => {
+            if (e.target === profileModal) profileModal.classList.remove('active');
+        });
+
+        function renderProfiles() {
+            const users = getUsers();
+            const myUsername = localStorage.getItem(SESSION_KEY);
+            const usernames = Object.keys(users);
+
+            if (usernames.length === 0) {
+                profilesGrid.innerHTML = '<div class="empty-state">Noch keine registrierten Profile.</div>';
+                return;
+            }
+
+            // eigenes Profil zuerst
+            usernames.sort((a, b) => {
+                if (a === myUsername) return -1;
+                if (b === myUsername) return 1;
+                return (users[a].displayName || a).localeCompare(users[b].displayName || b);
+            });
+
+            profilesGrid.innerHTML = usernames.map(username => {
+                const profile = users[username];
+                const isMe = username === myUsername;
+                const avatar = profile.avatar || AVATAR_DEFAULT;
+                const displayName = profile.displayName || username;
+
+                return `
+                    <div class="profile-card ${isMe ? 'is-me' : ''}" data-username="${escapeHtml(username)}">
+                        <div class="profile-avatar">${avatar}</div>
+                        <div class="profile-name">${escapeHtml(displayName)}</div>
+                        <div class="profile-username">@${escapeHtml(username)}</div>
+                        <div class="click-hint">Zum Ansehen klicken</div>
+                        ${isMe ? '<div class="me-badge">DAS BIST DU</div>' : ''}
+                    </div>
+                `;
+            }).join('');
+
+            document.querySelectorAll('.profile-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const username = card.dataset.username;
+                    openProfileDetail(username, users[username]);
+                });
+            });
+        }
+
+        renderProfiles();
+    </script>
+</body>
+</html>

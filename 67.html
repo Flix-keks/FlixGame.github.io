@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FlixGames.net Tools">
+    <title>FlixGames.net - Tools</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, #3b82f6 0%, #0f172a 45%, #020617 100%);
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 40px 16px 80px;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0 0 8px 0;
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #ff3b30, #00e5ff, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #9fb4c7;
+            margin-bottom: 40px;
+            font-size: 0.95rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #00e5ff;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .back-link:hover { text-decoration: underline; }
+
+        .grid {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        .tool-card {
+            background: rgba(2, 6, 23, 0.65);
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            border-radius: 16px;
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 12px rgba(0, 229, 255, 0.1);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-4px);
+            border-color: #00e5ff;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+        }
+
+        .tool-card .icon { font-size: 2.2rem; margin-bottom: 10px; }
+        .tool-card h3 { margin: 0 0 6px 0; font-size: 1.1rem; }
+        .tool-card p { margin: 0; font-size: 0.8rem; color: #9fb4c7; }
+
+        /* ---------- Modal ---------- */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(3px);
+            padding: 16px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background: rgba(2, 6, 23, 0.96);
+            border: 1px solid rgba(0, 229, 255, 0.45);
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.25);
+            border-radius: 16px;
+            padding: 26px;
+            width: 100%;
+            max-width: 440px;
+            max-height: 88vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            background: linear-gradient(90deg, #ff3b30, #00e5ff, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2f7ff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover { background: rgba(255, 59, 48, 0.5); }
+
+        input, select, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-family: Arial, sans-serif;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #00e5ff;
+            box-shadow: 0 0 8px rgba(0, 229, 255, 0.35);
+        }
+
+        label {
+            display: block;
+            font-size: 0.78rem;
+            color: #9fb4c7;
+            margin-bottom: 4px;
+        }
+
+        button.action {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 999px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #ffffff;
+            background: linear-gradient(135deg, #ff3b30, #00e5ff);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        button.action:hover { transform: translateY(-2px); }
+
+        button.secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #calcDisplay {
+            text-align: right;
+            font-size: 1.6rem;
+            padding: 14px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            min-height: 1.6rem;
+            word-break: break-all;
+        }
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .calc-grid button {
+            padding: 14px 0;
+            font-size: 1rem;
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            cursor: pointer;
+        }
+        .calc-grid button:hover { background: rgba(0, 229, 255, 0.2); }
+        .calc-grid button.op { color: #00e5ff; }
+        .calc-grid button.eq {
+            background: linear-gradient(135deg, #ff3b30, #00e5ff);
+            grid-column: span 2;
+        }
+
+        #notesList {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        .note-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .note-item span {
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .note-delete {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        #pwResult {
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            word-break: break-all;
+            letter-spacing: 1px;
+        }
+        .pw-options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #e2f7ff;
+            margin-bottom: 8px;
+        }
+        .pw-options input[type="checkbox"] { width: auto; margin: 0; }
+        .pw-options input[type="range"] { margin-bottom: 4px; }
+
+        #counterStats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #9fb4c7;
+        }
+        #counterStats b { color: #00e5ff; font-size: 1.1rem; display: block; }
+
+        #timerDisplay {
+            text-align: center;
+            font-size: 2.4rem;
+            font-weight: bold;
+            margin: 10px 0 16px;
+            color: #00e5ff;
+        }
+        .timer-buttons { display: flex; gap: 8px; }
+        .timer-buttons button { flex: 1; }
+
+        /* ---- Tic Tac Toe ---- */
+        #tttStatus {
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 14px;
+            color: #e2f7ff;
+            min-height: 1.4em;
+            transition: color 0.3s ease;
+        }
+        #tttBoardWrap {
+            position: relative;
+            max-width: 280px;
+            margin: 0 auto 16px;
+        }
+        .ttt-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .ttt-cell {
+            aspect-ratio: 1 / 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: background 0.2s ease, transform 0.15s ease;
+        }
+        .ttt-cell:hover:not(.filled) {
+            background: rgba(0, 229, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        .ttt-cell.filled { cursor: default; }
+        .ttt-cell.x { color: #00e5ff; text-shadow: 0 0 10px rgba(0, 229, 255, 0.6); }
+        .ttt-cell.o { color: #ff3b30; text-shadow: 0 0 10px rgba(255, 59, 48, 0.6); }
+
+        @keyframes tttMarkPop {
+            0%   { transform: scale(0); opacity: 0; }
+            60%  { transform: scale(1.25); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .ttt-cell.just-placed span {
+            display: inline-block;
+            animation: tttMarkPop 0.35s cubic-bezier(.34,1.56,.64,1);
+        }
+
+        @keyframes tttWinPulse {
+            0%, 100% {
+                box-shadow: 0 0 6px rgba(139, 92, 246, 0.4);
+                background: rgba(139, 92, 246, 0.18);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.9);
+                background: rgba(139, 92, 246, 0.4);
+            }
+        }
+        .ttt-cell.win {
+            animation: tttWinPulse 1s ease-in-out infinite;
+            border-color: #8b5cf6;
+        }
+
+        #tttWinLine {
+            position: absolute;
+            height: 5px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #8b5cf6, #00e5ff);
+            box-shadow: 0 0 14px rgba(139, 92, 246, 0.8);
+            transform-origin: left center;
+            width: 0;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            transition: width 0.4s cubic-bezier(.22,1,.36,1);
+        }
+
+        #tttScore {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 16px;
+            font-size: 0.8rem;
+            color: #9fb4c7;
+        }
+        #tttScore b { display: block; font-size: 1.2rem; color: #00e5ff; }
+        #tttScore .score-o b { color: #ff3b30; }
+
+        #tttWinBanner {
+            text-align: center;
+            font-size: 0;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: all 0.4s cubic-bezier(.22,1.4,.36,1);
+            margin-bottom: 0;
+        }
+        #tttWinBanner.show {
+            font-size: 1rem;
+            max-height: 60px;
+            opacity: 1;
+            transform: translateY(0);
+            margin-bottom: 14px;
+        }
+        #tttWinBanner .banner-inner {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 999px;
+            background: rgba(139, 92, 246, 0.18);
+            border: 1px solid #8b5cf6;
+            font-weight: bold;
+            color: #e9d5ff;
+        }
+
+        .ttt-confetti {
+            position: fixed;
+            top: -20px;
+            z-index: 300;
+            width: 8px;
+            height: 12px;
+            pointer-events: none;
+            opacity: 0.95;
+            animation: tttConfettiFall linear forwards;
+        }
+        @keyframes tttConfettiFall {
+            0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0.3; }
+        }
+
+        /* ---- Vier Gewinnt ---- */
+        #c4Status {
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 14px;
+            color: #e2f7ff;
+            min-height: 1.4em;
+        }
+        #c4Score {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 16px;
+            font-size: 0.8rem;
+            color: #9fb4c7;
+        }
+        #c4Score b { display: block; font-size: 1.2rem; }
+        #c4Score .score-red b { color: #ff3b30; }
+        #c4Score .score-yellow b { color: #facc15; }
+
+        #c4WinBanner {
+            text-align: center;
+            font-size: 0;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: all 0.4s cubic-bezier(.22,1.4,.36,1);
+        }
+        #c4WinBanner.show {
+            font-size: 1rem;
+            max-height: 60px;
+            opacity: 1;
+            transform: translateY(0);
+            margin-bottom: 14px;
+        }
+        #c4WinBanner .banner-inner {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 999px;
+            background: rgba(0, 229, 255, 0.15);
+            border: 1px solid #00e5ff;
+            font-weight: bold;
+            color: #d6f9ff;
+        }
+
+        #c4BoardWrap {
+            position: relative;
+            max-width: 336px;
+            margin: 0 auto 16px;
+        }
+        .c4-board {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            background: rgba(2, 6, 23, 0.5);
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 229, 255, 0.25);
+        }
+        .c4-col {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+        }
+        .c4-col:hover .c4-cell.empty {
+            background: rgba(0, 229, 255, 0.12);
+        }
+        .c4-cell {
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            position: relative;
+            transition: background 0.2s ease;
+        }
+        .c4-disc {
+            position: absolute;
+            inset: 8%;
+            border-radius: 50%;
+        }
+        .c4-disc.red {
+            background: radial-gradient(circle at 35% 30%, #ff8a80, #ff3b30 70%);
+            box-shadow: 0 0 10px rgba(255, 59, 48, 0.6);
+        }
+        .c4-disc.yellow {
+            background: radial-gradient(circle at 35% 30%, #fff3b0, #facc15 70%);
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+        }
+
+        @keyframes c4Drop {
+            0%   { transform: translateY(-260px); opacity: 0.6; }
+            65%  { transform: translateY(6px); opacity: 1; }
+            80%  { transform: translateY(-3px); }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .c4-disc.dropping {
+            animation: c4Drop 0.5s cubic-bezier(.4,0,.2,1);
+        }
+
+        @keyframes c4WinPulse {
+            0%, 100% { box-shadow: 0 0 6px rgba(52, 211, 153, 0.4); transform: scale(1); }
+            50%      { box-shadow: 0 0 22px rgba(52, 211, 153, 1); transform: scale(1.12); }
+        }
+        .c4-disc.win {
+            animation: c4WinPulse 0.9s ease-in-out infinite;
+            outline: 2px solid #34d399;
+        }
+
+        #c4WinLine {
+            position: absolute;
+            height: 5px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #34d399, #00e5ff);
+            box-shadow: 0 0 14px rgba(52, 211, 153, 0.8);
+            transform-origin: left center;
+            width: 0;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            transition: width 0.4s cubic-bezier(.22,1,.36,1);
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← Home</a>
+    <h1>FlixGames Tools</h1>
+    <p class="subtitle">Kleine Helfer, direkt im Browser - alles wird gespeichert, nichts geht verloren</p>
+
+    <div class="grid">
+        <div class="tool-card" data-tool="calc">
+            <div class="icon">🧮</div>
+            <h3>Taschenrechner</h3>
+            <p>Grundrechenarten schnell im Kopf... äh, im Browser</p>
+        </div>
+        <div class="tool-card" data-tool="convert">
+            <div class="icon">📐</div>
+            <h3>Einheiten-Umrechner</h3>
+            <p>Länge, Gewicht und Temperatur umrechnen</p>
+        </div>
+        <div class="tool-card" data-tool="notes">
+            <div class="icon">📝</div>
+            <h3>Notizen</h3>
+            <p>Schnelle Notizen, bleiben dauerhaft gespeichert</p>
+        </div>
+        <div class="tool-card" data-tool="password">
+            <div class="icon">🔑</div>
+            <h3>Passwort-Generator</h3>
+            <p>Sichere, zufällige Passwörter erstellen</p>
+        </div>
+        <div class="tool-card" data-tool="counter">
+            <div class="icon">🔤</div>
+            <h3>Zeichen/Wörter zählen</h3>
+            <p>Text einfügen, Zeichen &amp; Wörter zählen lassen</p>
+        </div>
+        <div class="tool-card" data-tool="timer">
+            <div class="icon">⏱️</div>
+            <h3>Stoppuhr &amp; Timer</h3>
+            <p>Zeit stoppen oder einen Countdown starten</p>
+        </div>
+        <div class="tool-card" data-tool="ttt">
+            <div class="icon">⭕</div>
+            <h3>Tic Tac Toe</h3>
+            <p>Klassisches 2-Spieler-Spiel, X gegen O</p>
+        </div>
+        <div class="tool-card" data-tool="c4">
+            <div class="icon">🔴</div>
+            <h3>Vier Gewinnt</h3>
+            <p>Steine fallen lassen, 4 in einer Reihe gewinnt</p>
+        </div>
+    </div>
+
+    <!-- ============ Modal: Rechner ============ -->
+    <div class="modal-overlay" id="modal-calc">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Taschenrechner</h2>
+                <button class="modal-close" data-close="calc">✕</button>
+            </div>
+            <div id="calcDisplay">0</div>
+            <div class="calc-grid" id="calcGrid"></div>
+        </div>
+    </div>
+
+    <!-- ============ Modal: Umrechner ============ -->
+    <div class="modal-overlay" id="modal-convert">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Einheiten-Umrechner</h2>
+                <button class="modal-close" data-close="convert">✕</button>
+            </div>
+
+            <label for="convCategory">Kategorie</label>
+            <select id="convCategory">
+                <option value="length">Länge</option>
+                <option value="weight">Gewicht</option>
+                <option value="temp">Temperatur</option>
+            </select>
+
+            <label for="convInput">Wert</label>
+            <input type="number" id="convInput" value="1">
+
+            <label for="convFrom">Von</label>
+            <select id="convFrom"></select>
+
+            <label for="convTo">Zu</label>
+            <select id="convTo"></select>
+
+            <div id="convResult" style="margin-top:14px; font-size:1.2rem; text-align:center; color:#00e5ff;"></div>
+        </div>
+    </div>
+
+    <!-- ============ Modal: Notizen ============ -->
+    <div class="modal-overlay" id="modal-notes">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Notizen</h2>
+                <button class="modal-close" data-close="notes">✕</button>
+            </div>
+
+            <textarea id="noteInput" rows="3" placeholder="Neue Notiz schreiben..."></textarea>
+            <button class="action" id="addNoteBtn">Hinzufügen</button>
+
+            <div id="notesList"></div>
+        </div>
+    </div>
+
+    <!-- ============ Modal: Passwort-Generator ============ -->
+    <div class="modal-overlay" id="modal-password">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Passwort-Generator</h2>
+                <button class="modal-close" data-close="password">✕</button>
+            </div>
+
+            <div id="pwResult">••••••••••••</div>
+            <button class="action" id="pwGenerateBtn" style="width:100%; margin-bottom:16px;">Neu generieren</button>
+
+            <div class="pw-options">
+                <label>Länge: <span id="pwLengthLabel">16</span></label>
+                <input type="range" id="pwLength" min="6" max="48" value="16">
+
+                <label><input type="checkbox" id="pwUpper" checked> Großbuchstaben (A-Z)</label>
+                <label><input type="checkbox" id="pwLower" checked> Kleinbuchstaben (a-z)</label>
+                <label><input type="checkbox" id="pwNumbers" checked> Zahlen (0-9)</label>
+                <label><input type="checkbox" id="pwSymbols" checked> Sonderzeichen (!@#...)</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ Modal: Zähler ============ -->
+    <div class="modal-overlay" id="modal-counter">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Zeichen/Wörter zählen</h2>
+                <button class="modal-close" data-close="counter">✕</button>
+            </div>
+
+            <textarea id="counterInput" rows="6" placeholder="Text hier einfügen..."></textarea>
+
+            <div id="counterStats">
+                <div><b id="statChars">0</b>Zeichen</div>
+                <div><b id="statWords">0</b>Wörter</div>
+                <div><b id="statLines">0</b>Zeilen</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ Modal: Timer ============ -->
+    <div class="modal-overlay" id="modal-timer">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Stoppuhr &amp; Timer</h2>
+                <button class="modal-close" data-close="timer">✕</button>
+            </div>
+
+            <div id="timerDisplay">00:00.0</div>
+
+            <div class="timer-buttons" style="margin-bottom:12px;">
+                <button class="action" id="timerStartBtn">Start</button>
+                <button class="action secondary" id="timerResetBtn">Reset</button>
+            </div>
+
+            <label for="countdownInput">Oder Countdown (Sekunden)</label>
+            <div style="display:flex; gap:8px;">
+                <input type="number" id="countdownInput" value="60" style="margin-bottom:0;">
+                <button class="action" id="countdownStartBtn">Countdown starten</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ Modal: Tic Tac Toe ============ -->
+    <div class="modal-overlay" id="modal-ttt">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Tic Tac Toe</h2>
+                <button class="modal-close" data-close="ttt">✕</button>
+            </div>
+
+            <div id="tttScore">
+                <div class="score-x">Spieler X<b id="tttScoreX">0</b></div>
+                <div>Unentschieden<b id="tttScoreDraw">0</b></div>
+                <div class="score-o">Spieler O<b id="tttScoreO">0</b></div>
+            </div>
+
+            <div id="tttWinBanner"><span class="banner-inner" id="tttWinBannerText"></span></div>
+
+            <div id="tttStatus">Spieler X ist am Zug</div>
+
+            <div id="tttBoardWrap">
+                <div class="ttt-board" id="tttBoard"></div>
+                <div id="tttWinLine"></div>
+            </div>
+
+            <button class="action secondary" id="tttResetBtn" style="width:100%;">Neues Spiel</button>
+        </div>
+    </div>
+
+    <!-- ============ Modal: Vier Gewinnt ============ -->
+    <div class="modal-overlay" id="modal-c4">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Vier Gewinnt</h2>
+                <button class="modal-close" data-close="c4">✕</button>
+            </div>
+
+            <div id="c4Score">
+                <div class="score-red">Rot<b id="c4ScoreRed">0</b></div>
+                <div>Unentschieden<b id="c4ScoreDraw">0</b></div>
+                <div class="score-yellow">Gelb<b id="c4ScoreYellow">0</b></div>
+            </div>
+
+            <div id="c4WinBanner"><span class="banner-inner" id="c4WinBannerText"></span></div>
+
+            <div id="c4Status">Rot ist am Zug</div>
+
+            <div id="c4BoardWrap">
+                <div class="c4-board" id="c4Board"></div>
+                <div id="c4WinLine"></div>
+            </div>
+
+            <button class="action secondary" id="c4ResetBtn" style="width:100%;">Neues Spiel</button>
+        </div>
+    </div>
+
+    <script>
+        function openModal(name) {
+            document.getElementById('modal-' + name).classList.add('active');
+        }
+        function closeModal(name) {
+            document.getElementById('modal-' + name).classList.remove('active');
+        }
+
+        document.querySelectorAll('.tool-card').forEach(card => {
+            card.addEventListener('click', () => openModal(card.dataset.tool));
+        });
+        document.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', () => closeModal(btn.dataset.close));
+        });
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('active');
+            });
+        });
+
+        const calcDisplay = document.getElementById('calcDisplay');
+        const calcGrid = document.getElementById('calcGrid');
+        const calcButtons = ['7','8','9','/','4','5','6','*','1','2','3','-','0','.','C','+','='];
+
+        let calcExpr = '';
+
+        calcButtons.forEach(label => {
+            const btn = document.createElement('button');
+            btn.textContent = label;
+            if (['/', '*', '-', '+'].includes(label)) btn.classList.add('op');
+            if (label === '=') btn.classList.add('eq');
+            btn.addEventListener('click', () => handleCalcInput(label));
+            calcGrid.appendChild(btn);
+        });
+
+        function handleCalcInput(label) {
+            if (label === 'C') {
+                calcExpr = '';
+            } else if (label === '=') {
+                try {
+                    if (/^[0-9+\-*/.\s]*$/.test(calcExpr)) {
+                        const result = Function('"use strict"; return (' + calcExpr + ')')();
+                        calcExpr = String(Math.round(result * 100000) / 100000);
+                    } else {
+                        calcExpr = 'Fehler';
+                    }
+                } catch (e) {
+                    calcExpr = 'Fehler';
+                }
+            } else {
+                if (calcExpr === 'Fehler') calcExpr = '';
+                calcExpr += label;
+            }
+            calcDisplay.textContent = calcExpr || '0';
+        }
+
+        const UNIT_DEFS = {
+            length: {
+                label: 'Länge',
+                units: { m: 1, km: 1000, cm: 0.01, mm: 0.001, mile: 1609.34, yard: 0.9144, foot: 0.3048, inch: 0.0254 }
+            },
+            weight: {
+                label: 'Gewicht',
+                units: { kg: 1, g: 0.001, mg: 0.000001, tonne: 1000, pound: 0.453592, ounce: 0.0283495 }
+            },
+            temp: {
+                label: 'Temperatur',
+                units: { celsius: 'C', fahrenheit: 'F', kelvin: 'K' }
+            }
+        };
+
+        const convCategory = document.getElementById('convCategory');
+        const convFrom = document.getElementById('convFrom');
+        const convTo = document.getElementById('convTo');
+        const convInput = document.getElementById('convInput');
+        const convResult = document.getElementById('convResult');
+
+        function populateUnitSelects() {
+            const cat = convCategory.value;
+            const units = Object.keys(UNIT_DEFS[cat].units);
+            convFrom.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join('');
+            convTo.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join('');
+            if (units.length > 1) convTo.selectedIndex = 1;
+            runConversion();
+        }
+
+        function convertTemp(value, from, to) {
+            let celsius;
+            if (from === 'celsius') celsius = value;
+            else if (from === 'fahrenheit') celsius = (value - 32) * 5 / 9;
+            else celsius = value - 273.15;
+
+            if (to === 'celsius') return celsius;
+            if (to === 'fahrenheit') return celsius * 9 / 5 + 32;
+            return celsius + 273.15;
+        }
+
+        function runConversion() {
+            const cat = convCategory.value;
+            const value = parseFloat(convInput.value);
+            if (isNaN(value)) {
+                convResult.textContent = '';
+                return;
+            }
+
+            const from = convFrom.value;
+            const to = convTo.value;
+            let result;
+
+            if (cat === 'temp') {
+                result = convertTemp(value, from, to);
+            } else {
+                const units = UNIT_DEFS[cat].units;
+                const baseValue = value * units[from];
+                result = baseValue / units[to];
+            }
+
+            convResult.textContent = value + ' ' + from + ' = ' + (Math.round(result * 10000) / 10000) + ' ' + to;
+        }
+
+        convCategory.addEventListener('change', populateUnitSelects);
+        convFrom.addEventListener('change', runConversion);
+        convTo.addEventListener('change', runConversion);
+        convInput.addEventListener('input', runConversion);
+        populateUnitSelects();
+
+        const NOTES_KEY = 'flixgames_notes';
+        const noteInput = document.getElementById('noteInput');
+        const notesList = document.getElementById('notesList');
+        const addNoteBtn = document.getElementById('addNoteBtn');
+
+        function loadNotes() {
+            try {
+                return JSON.parse(localStorage.getItem(NOTES_KEY)) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveNotes(notes) {
+            localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+        }
+
+        function renderNotes() {
+            const notes = loadNotes();
+            notesList.innerHTML = '';
+            notes.forEach((note, index) => {
+                const item = document.createElement('div');
+                item.className = 'note-item';
+                const span = document.createElement('span');
+                span.textContent = note;
+                const delBtn = document.createElement('button');
+                delBtn.className = 'note-delete';
+                delBtn.textContent = '🗑️';
+                delBtn.addEventListener('click', () => {
+                    const updated = loadNotes();
+                    updated.splice(index, 1);
+                    saveNotes(updated);
+                    renderNotes();
+                });
+                item.appendChild(span);
+                item.appendChild(delBtn);
+                notesList.appendChild(item);
+            });
+        }
+
+        addNoteBtn.addEventListener('click', () => {
+            const text = noteInput.value.trim();
+            if (!text) return;
+            const notes = loadNotes();
+            notes.unshift(text);
+            saveNotes(notes);
+            noteInput.value = '';
+            renderNotes();
+        });
+
+        renderNotes();
+
+        const pwResult = document.getElementById('pwResult');
+        const pwLength = document.getElementById('pwLength');
+        const pwLengthLabel = document.getElementById('pwLengthLabel');
+        const pwUpper = document.getElementById('pwUpper');
+        const pwLower = document.getElementById('pwLower');
+        const pwNumbers = document.getElementById('pwNumbers');
+        const pwSymbols = document.getElementById('pwSymbols');
+        const pwGenerateBtn = document.getElementById('pwGenerateBtn');
+
+        const CHAR_SETS = {
+            upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            lower: 'abcdefghijklmnopqrstuvwxyz',
+            numbers: '0123456789',
+            symbols: '!@#$%^&*()-_=+[]{}'
+        };
+
+        function generatePassword() {
+            let charset = '';
+            if (pwUpper.checked) charset += CHAR_SETS.upper;
+            if (pwLower.checked) charset += CHAR_SETS.lower;
+            if (pwNumbers.checked) charset += CHAR_SETS.numbers;
+            if (pwSymbols.checked) charset += CHAR_SETS.symbols;
+
+            if (!charset) {
+                pwResult.textContent = 'Mind. eine Option wählen';
+                return;
+            }
+
+            const length = parseInt(pwLength.value, 10);
+            const randomValues = new Uint32Array(length);
+            crypto.getRandomValues(randomValues);
+
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += charset[randomValues[i] % charset.length];
+            }
+            pwResult.textContent = password;
+        }
+
+        pwLength.addEventListener('input', () => {
+            pwLengthLabel.textContent = pwLength.value;
+            generatePassword();
+        });
+        [pwUpper, pwLower, pwNumbers, pwSymbols].forEach(el => {
+            el.addEventListener('change', generatePassword);
+        });
+        pwGenerateBtn.addEventListener('click', generatePassword);
+        generatePassword();
+
+        const counterInput = document.getElementById('counterInput');
+        const statChars = document.getElementById('statChars');
+        const statWords = document.getElementById('statWords');
+        const statLines = document.getElementById('statLines');
+
+        counterInput.addEventListener('input', () => {
+            const text = counterInput.value;
+            statChars.textContent = text.length;
+            statWords.textContent = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            statLines.textContent = text === '' ? 0 : text.split('\n').length;
+        });
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerStartBtn = document.getElementById('timerStartBtn');
+        const timerResetBtn = document.getElementById('timerResetBtn');
+        const countdownInput = document.getElementById('countdownInput');
+        const countdownStartBtn = document.getElementById('countdownStartBtn');
+
+        let stopwatchInterval = null;
+        let stopwatchStart = 0;
+        let stopwatchElapsed = 0;
+        let stopwatchRunning = false;
+
+        let countdownInterval = null;
+
+        function formatStopwatch(ms) {
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const tenths = Math.floor((ms % 1000) / 100);
+            return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0') + '.' + tenths;
+        }
+
+        function updateStopwatchDisplay() {
+            const elapsed = stopwatchElapsed + (stopwatchRunning ? Date.now() - stopwatchStart : 0);
+            timerDisplay.textContent = formatStopwatch(elapsed);
+        }
+
+        timerStartBtn.addEventListener('click', () => {
+            clearInterval(countdownInterval);
+            if (!stopwatchRunning) {
+                stopwatchRunning = true;
+                stopwatchStart = Date.now();
+                stopwatchInterval = setInterval(updateStopwatchDisplay, 100);
+                timerStartBtn.textContent = 'Pause';
+            } else {
+                stopwatchRunning = false;
+                stopwatchElapsed += Date.now() - stopwatchStart;
+                clearInterval(stopwatchInterval);
+                timerStartBtn.textContent = 'Weiter';
+            }
+        });
+
+        timerResetBtn.addEventListener('click', () => {
+            clearInterval(stopwatchInterval);
+            clearInterval(countdownInterval);
+            stopwatchRunning = false;
+            stopwatchElapsed = 0;
+            timerStartBtn.textContent = 'Start';
+            timerDisplay.textContent = '00:00.0';
+            timerDisplay.style.color = '#00e5ff';
+        });
+
+        countdownStartBtn.addEventListener('click', () => {
+            clearInterval(stopwatchInterval);
+            clearInterval(countdownInterval);
+            stopwatchRunning = false;
+            timerStartBtn.textContent = 'Start';
+
+            let remaining = parseInt(countdownInput.value, 10);
+            if (isNaN(remaining) || remaining <= 0) return;
+
+            timerDisplay.style.color = '#00e5ff';
+            timerDisplay.textContent = formatStopwatch(remaining * 1000);
+
+            countdownInterval = setInterval(() => {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    timerDisplay.textContent = '00:00.0';
+                    timerDisplay.style.color = '#ff3b30';
+                    clearInterval(countdownInterval);
+                    return;
+                }
+                timerDisplay.textContent = formatStopwatch(remaining * 1000);
+            }, 1000);
+        });
+
+        /* ============================================================
+           7) Tic Tac Toe (mit Gewinn-Animation)
+           ============================================================ */
+        const tttBoardEl = document.getElementById('tttBoard');
+        const tttBoardWrap = document.getElementById('tttBoardWrap');
+        const tttStatus = document.getElementById('tttStatus');
+        const tttWinLine = document.getElementById('tttWinLine');
+        const tttResetBtn = document.getElementById('tttResetBtn');
+        const tttWinBanner = document.getElementById('tttWinBanner');
+        const tttWinBannerText = document.getElementById('tttWinBannerText');
+        const tttScoreXEl = document.getElementById('tttScoreX');
+        const tttScoreOEl = document.getElementById('tttScoreO');
+        const tttScoreDrawEl = document.getElementById('tttScoreDraw');
+
+        const TTT_WIN_LINES = [
+            [0,1,2], [3,4,5], [6,7,8],
+            [0,3,6], [1,4,7], [2,5,8],
+            [0,4,8], [2,4,6]
+        ];
+
+        let tttBoard = Array(9).fill(null);
+        let tttCurrentPlayer = 'X';
+        let tttGameOver = false;
+        let tttScores = { X: 0, O: 0, draw: 0 };
+
+        function tttBuildBoard() {
+            tttBoardEl.innerHTML = '';
+            tttBoard.forEach((val, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'ttt-cell';
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => tttHandleCellClick(i));
+                tttBoardEl.appendChild(cell);
+            });
+        }
+
+        function tttHandleCellClick(index) {
+            if (tttGameOver || tttBoard[index]) return;
+
+            tttBoard[index] = tttCurrentPlayer;
+            tttRenderCell(index);
+
+            const winResult = tttCheckWinner();
+            if (winResult) {
+                tttEndGame(winResult);
+                return;
+            }
+
+            if (tttBoard.every(c => c !== null)) {
+                tttEndGame({ draw: true });
+                return;
+            }
+
+            tttCurrentPlayer = tttCurrentPlayer === 'X' ? 'O' : 'X';
+            tttStatus.textContent = 'Spieler ' + tttCurrentPlayer + ' ist am Zug';
+        }
+
+        function tttRenderCell(index) {
+            const cellEl = tttBoardEl.children[index];
+            const value = tttBoard[index];
+            cellEl.classList.add('filled', value === 'X' ? 'x' : 'o');
+            cellEl.innerHTML = '<span>' + value + '</span>';
+            cellEl.classList.add('just-placed');
+        }
+
+        function tttCheckWinner() {
+            for (const line of TTT_WIN_LINES) {
+                const [a, b, c] = line;
+                if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
+                    return { winner: tttBoard[a], line };
+                }
+            }
+            return null;
+        }
+
+        function tttEndGame(result) {
+            tttGameOver = true;
+
+            if (result.draw) {
+                tttStatus.textContent = 'Unentschieden!';
+                tttScores.draw++;
+                tttScoreDrawEl.textContent = tttScores.draw;
+                tttShowBanner('🤝 Unentschieden!');
+                return;
+            }
+
+            const { winner, line } = result;
+            tttStatus.textContent = 'Spieler ' + winner + ' hat gewonnen!';
+            tttScores[winner]++;
+            (winner === 'X' ? tttScoreXEl : tttScoreOEl).textContent = tttScores[winner];
+
+            line.forEach(i => {
+                tttBoardEl.children[i].classList.add('win');
+            });
+
+            tttDrawWinLine(line);
+            tttShowBanner('🎉 Spieler ' + winner + ' gewinnt!');
+            tttLaunchConfetti();
+        }
+
+        function tttDrawWinLine(line) {
+            const [a, , c] = line;
+            const cellA = tttBoardEl.children[a].getBoundingClientRect();
+            const cellC = tttBoardEl.children[c].getBoundingClientRect();
+            const wrapRect = tttBoardWrap.getBoundingClientRect();
+
+            const x1 = cellA.left + cellA.width / 2 - wrapRect.left;
+            const y1 = cellA.top + cellA.height / 2 - wrapRect.top;
+            const x2 = cellC.left + cellC.width / 2 - wrapRect.left;
+            const y2 = cellC.top + cellC.height / 2 - wrapRect.top;
+
+            const length = Math.hypot(x2 - x1, y2 - y1);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+            tttWinLine.style.top = y1 + 'px';
+            tttWinLine.style.left = x1 + 'px';
+            tttWinLine.style.transform = `rotate(${angle}deg)`;
+            tttWinLine.style.width = '0px';
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    tttWinLine.style.width = length + 'px';
+                });
+            });
+        }
+
+        function tttShowBanner(text) {
+            tttWinBannerText.textContent = text;
+            tttWinBanner.classList.add('show');
+        }
+
+        function tttHideBanner() {
+            tttWinBanner.classList.remove('show');
+        }
+
+        const TTT_CONFETTI_COLORS = ['#00e5ff', '#ff3b30', '#8b5cf6', '#34d399', '#facc15'];
+
+        function tttLaunchConfetti() {
+            const count = 40;
+            for (let i = 0; i < count; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'ttt-confetti';
+                piece.style.left = Math.random() * 100 + 'vw';
+                piece.style.background = TTT_CONFETTI_COLORS[Math.floor(Math.random() * TTT_CONFETTI_COLORS.length)];
+                piece.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+                piece.style.animationDelay = (Math.random() * 0.3) + 's';
+                piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                document.body.appendChild(piece);
+                setTimeout(() => piece.remove(), 4000);
+            }
+        }
+
+        function tttResetGame() {
+            tttBoard = Array(9).fill(null);
+            tttCurrentPlayer = 'X';
+            tttGameOver = false;
+            tttStatus.textContent = 'Spieler X ist am Zug';
+            tttWinLine.style.width = '0px';
+            tttHideBanner();
+            tttBuildBoard();
+        }
+
+        tttResetBtn.addEventListener('click', tttResetGame);
+        tttBuildBoard();
+
+        /* ============================================================
+           8) Vier Gewinnt (mit Fallen-Animation + Gewinn-Animation)
+           ============================================================ */
+        const C4_COLS = 7;
+        const C4_ROWS = 6;
+
+        const c4BoardEl = document.getElementById('c4Board');
+        const c4BoardWrap = document.getElementById('c4BoardWrap');
+        const c4Status = document.getElementById('c4Status');
+        const c4WinLine = document.getElementById('c4WinLine');
+        const c4ResetBtn = document.getElementById('c4ResetBtn');
+        const c4WinBanner = document.getElementById('c4WinBanner');
+        const c4WinBannerText = document.getElementById('c4WinBannerText');
+        const c4ScoreRedEl = document.getElementById('c4ScoreRed');
+        const c4ScoreYellowEl = document.getElementById('c4ScoreYellow');
+        const c4ScoreDrawEl = document.getElementById('c4ScoreDraw');
+
+        // grid[row][col], row 0 = oberste Reihe
+        let c4Grid = [];
+        let c4CellEls = [];
+        let c4CurrentPlayer = 'red';
+        let c4GameOver = false;
+        let c4Scores = { red: 0, yellow: 0, draw: 0 };
+
+        function c4BuildBoard() {
+            c4Grid = Array.from({ length: C4_ROWS }, () => Array(C4_COLS).fill(null));
+            c4CellEls = Array.from({ length: C4_ROWS }, () => Array(C4_COLS).fill(null));
+            c4BoardEl.innerHTML = '';
+
+            for (let col = 0; col < C4_COLS; col++) {
+                const colEl = document.createElement('div');
+                colEl.className = 'c4-col';
+                colEl.dataset.col = col;
+                colEl.addEventListener('click', () => c4HandleColumnClick(col));
+
+                for (let row = 0; row < C4_ROWS; row++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'c4-cell empty';
+                    colEl.appendChild(cell);
+                    c4CellEls[row][col] = cell;
+                }
+                c4BoardEl.appendChild(colEl);
+            }
+        }
+
+        function c4HandleColumnClick(col) {
+            if (c4GameOver) return;
+
+            // niedrigste freie Reihe in dieser Spalte finden
+            let targetRow = -1;
+            for (let row = C4_ROWS - 1; row >= 0; row--) {
+                if (!c4Grid[row][col]) {
+                    targetRow = row;
+                    break;
+                }
+            }
+            if (targetRow === -1) return; // Spalte voll
+
+            c4Grid[targetRow][col] = c4CurrentPlayer;
+            c4RenderDisc(targetRow, col, c4CurrentPlayer);
+
+            const winResult = c4CheckWinner(targetRow, col);
+            if (winResult) {
+                c4EndGame(winResult);
+                return;
+            }
+
+            if (c4Grid.every(row => row.every(c => c !== null))) {
+                c4EndGame({ draw: true });
+                return;
+            }
+
+            c4CurrentPlayer = c4CurrentPlayer === 'red' ? 'yellow' : 'red';
+            c4Status.textContent = (c4CurrentPlayer === 'red' ? 'Rot' : 'Gelb') + ' ist am Zug';
+        }
+
+        function c4RenderDisc(row, col, player) {
+            const cellEl = c4CellEls[row][col];
+            cellEl.classList.remove('empty');
+            const disc = document.createElement('div');
+            disc.className = 'c4-disc ' + player + ' dropping';
+            cellEl.appendChild(disc);
+        }
+
+        function c4CheckWinner(row, col) {
+            const player = c4Grid[row][col];
+            const directions = [
+                { dr: 0, dc: 1 },  // horizontal
+                { dr: 1, dc: 0 },  // vertikal
+                { dr: 1, dc: 1 },  // Diagonale \
+                { dr: 1, dc: -1 }  // Diagonale /
+            ];
+
+            for (const { dr, dc } of directions) {
+                const line = [[row, col]];
+
+                // in positive Richtung sammeln
+                let r = row + dr, c = col + dc;
+                while (r >= 0 && r < C4_ROWS && c >= 0 && c < C4_COLS && c4Grid[r][c] === player) {
+                    line.push([r, c]);
+                    r += dr; c += dc;
+                }
+                // in negative Richtung sammeln
+                r = row - dr; c = col - dc;
+                while (r >= 0 && r < C4_ROWS && c >= 0 && c < C4_COLS && c4Grid[r][c] === player) {
+                    line.unshift([r, c]);
+                    r -= dr; c -= dc;
+                }
+
+                if (line.length >= 4) {
+                    return { winner: player, line: line.slice(0, Math.max(4, line.length)) };
+                }
+            }
+            return null;
+        }
+
+        function c4EndGame(result) {
+            c4GameOver = true;
+
+            if (result.draw) {
+                c4Status.textContent = 'Unentschieden!';
+                c4Scores.draw++;
+                c4ScoreDrawEl.textContent = c4Scores.draw;
+                c4ShowBanner('🤝 Unentschieden!');
+                return;
+            }
+
+            const { winner, line } = result;
+            const winnerLabel = winner === 'red' ? 'Rot' : 'Gelb';
+            c4Status.textContent = winnerLabel + ' hat gewonnen!';
+            c4Scores[winner]++;
+            (winner === 'red' ? c4ScoreRedEl : c4ScoreYellowEl).textContent = c4Scores[winner];
+
+            line.forEach(([r, c]) => {
+                const disc = c4CellEls[r][c].querySelector('.c4-disc');
+                if (disc) disc.classList.add('win');
+            });
+
+            c4DrawWinLine(line);
+            c4ShowBanner('🎉 ' + winnerLabel + ' gewinnt!');
+            c4LaunchConfetti();
+        }
+
+        function c4DrawWinLine(line) {
+            const [r1, c1] = line[0];
+            const [r2, c2] = line[line.length - 1];
+
+            const cellA = c4CellEls[r1][c1].getBoundingClientRect();
+            const cellB = c4CellEls[r2][c2].getBoundingClientRect();
+            const wrapRect = c4BoardWrap.getBoundingClientRect();
+
+            const x1 = cellA.left + cellA.width / 2 - wrapRect.left;
+            const y1 = cellA.top + cellA.height / 2 - wrapRect.top;
+            const x2 = cellB.left + cellB.width / 2 - wrapRect.left;
+            const y2 = cellB.top + cellB.height / 2 - wrapRect.top;
+
+            const length = Math.hypot(x2 - x1, y2 - y1);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+            c4WinLine.style.top = y1 + 'px';
+            c4WinLine.style.left = x1 + 'px';
+            c4WinLine.style.transform = `rotate(${angle}deg)`;
+            c4WinLine.style.width = '0px';
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    c4WinLine.style.width = length + 'px';
+                });
+            });
+        }
+
+        function c4ShowBanner(text) {
+            c4WinBannerText.textContent = text;
+            c4WinBanner.classList.add('show');
+        }
+
+        function c4HideBanner() {
+            c4WinBanner.classList.remove('show');
+        }
+
+        function c4LaunchConfetti() {
+            const count = 40;
+            for (let i = 0; i < count; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'ttt-confetti';
+                piece.style.left = Math.random() * 100 + 'vw';
+                piece.style.background = TTT_CONFETTI_COLORS[Math.floor(Math.random() * TTT_CONFETTI_COLORS.length)];
+                piece.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+                piece.style.animationDelay = (Math.random() * 0.3) + 's';
+                piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                document.body.appendChild(piece);
+                setTimeout(() => piece.remove(), 4000);
+            }
+        }
+
+        function c4ResetGame() {
+            c4CurrentPlayer = 'red';
+            c4GameOver = false;
+            c4Status.textContent = 'Rot ist am Zug';
+            c4WinLine.style.width = '0px';
+            c4HideBanner();
+            c4BuildBoard();
+        }
+
+        c4ResetBtn.addEventListener('click', c4ResetGame);
+        c4BuildBoard();
+    </script>
+</body>
+</html>
